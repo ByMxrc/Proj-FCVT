@@ -1,5 +1,5 @@
 export interface Estudiante {
   id_estudiante: number;
-  cedula: number
+  cedula: number;
   carrera: string;
 }

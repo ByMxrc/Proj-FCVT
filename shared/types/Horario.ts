@@ -1,6 +1,6 @@
-export type Horario = {
+export interface Horario {
   id_horario: string;
   inicio: Date;
-  fim: Date;
-  descricao: string;
-};
+  fin: Date;
+  descripcion: string;
+}

@@ -1,4 +1,4 @@
-export type Usuario = {
+export interface Usuario {
   id_usuario: number;
   nombres: string;
   apellidos: string;
@@ -8,4 +8,4 @@ export type Usuario = {
   cedula: string;
   edad: number;
   rol: 'alumno' | 'profesor' | 'admin';
-};
+}

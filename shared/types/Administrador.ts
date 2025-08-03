@@ -1,3 +1,3 @@
-export class Administrador {
+export interface Administrador {
   id: number;
 }
