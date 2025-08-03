@@ -46,9 +46,7 @@ class EdificioCRUD {
 // Ejemplo de uso
 const crud = new EdificioCRUD();
 // Asegúrate de que las propiedades coincidan con las definidas en Edificio (excepto id_edificio)
-crud.crear({ nombre_edificio: 'Edificio A', direccion: 'Calle 123' });
-crud.crear({ nombre: 'Edificio B', direccion: 'Avenida 456' });
 console.log(crud.obtenerTodos());
-crud.actualizar(1, { direccion: 'Calle 789' });
+crud.crear({ nombre_edificio: 'Edificio B', id_facultad: 1 });
 crud.eliminar(2);
 console.log(crud.obtenerTodos());
