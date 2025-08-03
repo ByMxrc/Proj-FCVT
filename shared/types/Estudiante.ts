@@ -1,6 +1,5 @@
-export class Estudiante {
-  id: number;
-  matricula: string;
+export interface Estudiante {
+  id_estudiante: number;
+  cedula: number
   carrera: string;
-  estado: string;
 }

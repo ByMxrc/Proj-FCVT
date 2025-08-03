@@ -1,0 +1,53 @@
+<div>
+    <h2>Edificio</h2>
+    <form (ngSubmit)="agregarEdificio()">
+        <input [(ngModel)]="nuevoEdificio.nombre" name="nombre" placeholder="Nombre" required />
+        <input [(ngModel)]="nuevoEdificio.ubicacion" name="ubicacion" placeholder="Ubicación" required />
+        <button type="submit">Agregar</button>
+    </form>
+    <ul>
+        <li *ngFor="let edificio of edificios">
+            {{ edificio.nombre }} - {{ edificio.ubicacion }}
+            <button (click)="editarEdificio(edificio)">Editar</button>
+            <button (click)="eliminarEdificio(edificio.id)">Eliminar</button>
+        </li>
+    </ul>
+    <div *ngIf="edificioEditando">
+        <h3>Editar Edificio</h3>
+        <form (ngSubmit)="actualizarEdificio()">
+            <input [(ngModel)]="edificioEditando.nombre" name="editNombre" required />
+            <input [(ngModel)]="edificioEditando.ubicacion" name="editUbicacion" required />
+            <button type="submit">Actualizar</button>
+            <button type="button" (click)="cancelarEdicion()">Cancelar</button>
+        </form>
+    </div>
+</div>
+
+<div>
+    <h2>Estudiantes</h2>
+    <form (ngSubmit)="agregarEstudiante()">
+        <input [(ngModel)]="nuevoEstudiante.nombre" name="nombre" placeholder="Nombre" required />
+        <input [(ngModel)]="nuevoEstudiante.apellido" name="apellido" placeholder="Apellido" required />
+        <input [(ngModel)]="nuevoEstudiante.edad" name="edad" type="number" placeholder="Edad" required />
+        <input [(ngModel)]="nuevoEstudiante.correo" name="correo" placeholder="Correo" required />
+        <button type="submit">Agregar</button>
+    </form>
+    <ul>
+        <li *ngFor="let estudiante of estudiantes">
+            {{ estudiante.nombre }} {{ estudiante.apellido }} ({{ estudiante.edad }}) - {{ estudiante.correo }}
+            <button (click)="editarEstudiante(estudiante)">Editar</button>
+            <button (click)="eliminarEstudiante(estudiante.id)">Eliminar</button>
+        </li>
+    </ul>
+    <div *ngIf="estudianteEditando">
+        <h3>Editar Estudiante</h3>
+        <form (ngSubmit)="actualizarEstudiante()">
+            <input [(ngModel)]="estudianteEditando.nombre" name="editNombre" required />
+            <input [(ngModel)]="estudianteEditando.apellido" name="editApellido" required />
+            <input [(ngModel)]="estudianteEditando.edad" name="editEdad" type="number" required />
+            <input [(ngModel)]="estudianteEditando.correo" name="editCorreo" required />
+            <button type="submit">Actualizar</button>
+            <button type="button" (click)="cancelarEdicion()">Cancelar</button>
+        </form>
+    </div>
+</div>

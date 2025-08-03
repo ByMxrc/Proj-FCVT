@@ -1,0 +1,53 @@
+<div>
+    <h2>Aula</h2>
+    <form (ngSubmit)="agregarAula()">
+        <input [(ngModel)]="nuevoAula.nombre" name="nombre" placeholder="Nombre" required />
+        <input [(ngModel)]="nuevoAula.nivel" name="nivel" placeholder="Nivel" required />
+        <button type="submit">Agregar</button>
+    </form>
+    <ul>
+        <li *ngFor="let aula of aulas">
+            {{ aula.nombre }} - {{ aula.nivel }}
+            <button (click)="editarAula(aula)">Editar</button>
+            <button (click)="eliminarAula(aula.id)">Eliminar</button>
+        </li>
+    </ul>
+    <div *ngIf="aulaEditando">
+        <h3>Editar Aula</h3>
+        <form (ngSubmit)="actualizarAula()">
+            <input [(ngModel)]="aulaEditando.nombre" name="editNombre" required />
+            <input [(ngModel)]="aulaEditando.nivel" name="editNivel" required />
+            <button type="submit">Actualizar</button>
+            <button type="button" (click)="cancelarEdicion()">Cancelar</button>
+        </form>
+    </div>
+</div>
+
+<div>
+    <h2>Estudiantes</h2>
+    <form (ngSubmit)="agregarEstudiante()">
+        <input [(ngModel)]="nuevoEstudiante.nombre" name="nombre" placeholder="Nombre" required />
+        <input [(ngModel)]="nuevoEstudiante.apellido" name="apellido" placeholder="Apellido" required />
+        <input [(ngModel)]="nuevoEstudiante.edad" name="edad" type="number" placeholder="Edad" required />
+        <input [(ngModel)]="nuevoEstudiante.correo" name="correo" placeholder="Correo" required />
+        <button type="submit">Agregar</button>
+    </form>
+    <ul>
+        <li *ngFor="let estudiante of estudiantes">
+            {{ estudiante.nombre }} {{ estudiante.apellido }} ({{ estudiante.edad }}) - {{ estudiante.correo }}
+            <button (click)="editarEstudiante(estudiante)">Editar</button>
+            <button (click)="eliminarEstudiante(estudiante.id)">Eliminar</button>
+        </li>
+    </ul>
+    <div *ngIf="estudianteEditando">
+        <h3>Editar Estudiante</h3>
+        <form (ngSubmit)="actualizarEstudiante()">
+            <input [(ngModel)]="estudianteEditando.nombre" name="editNombre" required />
+            <input [(ngModel)]="estudianteEditando.apellido" name="editApellido" required />
+            <input [(ngModel)]="estudianteEditando.edad" name="editEdad" type="number" required />
+            <input [(ngModel)]="estudianteEditando.correo" name="editCorreo" required />
+            <button type="submit">Actualizar</button>
+            <button type="button" (click)="cancelarEdicion()">Cancelar</button>
+        </form>
+    </div>
+</div>

@@ -1,5 +1,5 @@
 export class Edificio {
-  id: number;
-  nombre: string;
+  id_edificio: number;
+  nombre_edificio: string;
   id_facultad: number;
 }
