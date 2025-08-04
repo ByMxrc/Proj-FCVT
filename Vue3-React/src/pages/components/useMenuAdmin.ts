@@ -290,12 +290,15 @@ export function useMenuAdmin() {
   
   const formularioPiso = ref({
     numero_piso: '',
-    id_edificio: ''
+    id_edificio: '',
+    id_facultad: ''
   })
   
   const formularioAula = ref({
     nombre_aula: '',
-    id_piso: ''
+    id_piso: '',
+    id_edificio: '',
+    id_facultad: ''
   })
   
   // Filtros y selecciones
@@ -336,6 +339,50 @@ export function useMenuAdmin() {
     }
     return nombres[tipo as keyof typeof nombres] || tipo
   }
+
+  // Función para obtener el título descriptivo del modal de infraestructura
+  const obtenerTituloModalInfraestructura = (): string => {
+    const accion = modoEdicionInfraestructura.value ? 'Editar' : 'Crear'
+    const tipoSingular = obtenerNombreSingular(tipoInfraestructuraActivo.value)
+    
+    let contexto = ''
+    
+    switch (tipoInfraestructuraActivo.value) {
+      case 'edificios':
+        if (facultadSeleccionada.value) {
+          const facultad = facultades.value.find(f => f.id_facultad === parseInt(facultadSeleccionada.value))
+          contexto = ` en ${facultad?.nombre_facultad}`
+        }
+        break
+      case 'pisos':
+        if (edificioSeleccionado.value) {
+          const edificio = edificios.value.find(e => e.id_edificio === parseInt(edificioSeleccionado.value))
+          const facultad = edificio ? facultades.value.find(f => f.id_facultad === edificio.id_facultad) : null
+          contexto = ` en ${edificio?.nombre_edificio}${facultad ? ` (${facultad.nombre_facultad})` : ''}`
+        } else if (facultadSeleccionada.value) {
+          const facultad = facultades.value.find(f => f.id_facultad === parseInt(facultadSeleccionada.value))
+          contexto = ` en ${facultad?.nombre_facultad}`
+        }
+        break
+      case 'aulas':
+        if (pisoSeleccionado.value) {
+          const piso = pisos.value.find(p => p.id_piso === parseInt(pisoSeleccionado.value))
+          const edificio = piso ? edificios.value.find(e => e.id_edificio === piso.id_edificio) : null
+          const facultad = edificio ? facultades.value.find(f => f.id_facultad === edificio.id_facultad) : null
+          contexto = ` en ${formatearNumeroPiso(piso?.numero_piso || 0)}, ${edificio?.nombre_edificio}${facultad ? ` (${facultad.nombre_facultad})` : ''}`
+        } else if (edificioSeleccionado.value) {
+          const edificio = edificios.value.find(e => e.id_edificio === parseInt(edificioSeleccionado.value))
+          const facultad = edificio ? facultades.value.find(f => f.id_facultad === edificio.id_facultad) : null
+          contexto = ` en ${edificio?.nombre_edificio}${facultad ? ` (${facultad.nombre_facultad})` : ''}`
+        } else if (facultadSeleccionada.value) {
+          const facultad = facultades.value.find(f => f.id_facultad === parseInt(facultadSeleccionada.value))
+          contexto = ` en ${facultad?.nombre_facultad}`
+        }
+        break
+    }
+    
+    return `${accion} ${tipoSingular}${contexto}`
+  }
   
   // Computed para filtros jerárquicos
   const edificiosFiltrados = computed(() => {
@@ -352,20 +399,39 @@ export function useMenuAdmin() {
     if (!pisoSeleccionado.value) return aulas.value
     return aulas.value.filter(aula => aula.id_piso === parseInt(pisoSeleccionado.value))
   })
-  
-  // Computed para mostrar elementos según el tipo activo
-  const elementosParaMostrar = computed(() => {
-    switch (tipoInfraestructuraActivo.value) {
-      case 'edificios':
-        return edificiosFiltrados.value
-      case 'pisos':
-        return pisosFiltrados.value
-      case 'aulas':
-        return aulasFiltradas.value
-      default:
-        return facultades.value
-    }
+
+  // Computed properties para formularios modales
+  const edificiosFiltradosPiso = computed(() => {
+    if (!formularioPiso.value.id_facultad) return []
+    return edificios.value.filter(edificio => edificio.id_facultad === parseInt(formularioPiso.value.id_facultad))
   })
+
+  const edificiosFiltradosAula = computed(() => {
+    if (!formularioAula.value.id_facultad) return []
+    return edificios.value.filter(edificio => edificio.id_facultad === parseInt(formularioAula.value.id_facultad))
+  })
+
+  const pisosFiltradosAula = computed(() => {
+    if (!formularioAula.value.id_edificio) return []
+    return pisos.value.filter(piso => piso.id_edificio === parseInt(formularioAula.value.id_edificio))
+  })
+
+  // Funciones de cambio para formularios modales
+  const onFacultadChangePiso = () => {
+    // Limpiar edificio cuando cambia la facultad
+    formularioPiso.value.id_edificio = ''
+  }
+
+  const onFacultadChangeAula = () => {
+    // Limpiar edificio y piso cuando cambia la facultad
+    formularioAula.value.id_edificio = ''
+    formularioAula.value.id_piso = ''
+  }
+
+  const onEdificioChangeAula = () => {
+    // Limpiar piso cuando cambia el edificio
+    formularioAula.value.id_piso = ''
+  }
   
   // Funciones de carga
   const cargarInfraestructura = async () => {
@@ -433,8 +499,8 @@ export function useMenuAdmin() {
   const limpiarFormularios = () => {
     formularioFacultad.value = { nombre_facultad: '' }
     formularioEdificio.value = { nombre_edificio: '', id_facultad: '' }
-    formularioPiso.value = { numero_piso: '', id_edificio: '' }
-    formularioAula.value = { nombre_aula: '', id_piso: '' }
+    formularioPiso.value = { numero_piso: '', id_edificio: '', id_facultad: '' }
+    formularioAula.value = { nombre_aula: '', id_piso: '', id_edificio: '', id_facultad: '' }
   }
   
   // Funciones CRUD
@@ -498,7 +564,6 @@ export function useMenuAdmin() {
   // =================== GESTIÓN DE MATERIAS ===================
   // Estados para materias
   const materias = ref<Materia[]>([])
-  const docentes = ref<Docente[]>([])
   const horarios = ref<Horario[]>([])
   const paralelos = ref<Paralelo[]>([])
   
@@ -513,11 +578,6 @@ export function useMenuAdmin() {
     nombre_materia: '',
     semestre: 0
   })
-  
-  // Variables para selección jerárquica en materias
-  const facultadSeleccionadaMateria = ref('')
-  const edificioSeleccionadoMateria = ref('')
-  const pisoSeleccionadoMateria = ref('')
   
   // Opciones para los formularios
   const diasSemana: DiaSemanaEnum[] = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado']
@@ -1070,12 +1130,19 @@ export function useMenuAdmin() {
     edificiosFiltrados,
     pisosFiltrados,
     aulasFiltradas,
+    edificiosFiltradosPiso,
+    edificiosFiltradosAula,
+    pisosFiltradosAula,
+    onFacultadChangePiso,
+    onFacultadChangeAula,
+    onEdificioChangeAula,
     abrirModalCrearInfraestructura,
     cerrarModalInfraestructura,
     guardarInfraestructura,
     opcionesPisos,
     formatearNumeroPiso,
     obtenerNombreSingular,
+    obtenerTituloModalInfraestructura,
     
     // Materias
     materias,

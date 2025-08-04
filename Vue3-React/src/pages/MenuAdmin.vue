@@ -10,8 +10,7 @@
         
         <div class="user-section">
           <div class="user-info">
-            <span class="admin-name">{{ adminData.name }}</span>
-            <span class="admin-role">Administrador</span>
+            <span class="admin-name">Administrador</span>
           </div>
           
           <button @click="logout" class="logout-btn">
@@ -370,7 +369,7 @@
       <div v-if="mostrarModalInfraestructura" class="modal-overlay" @click="cerrarModalInfraestructura">
         <div class="modal-content" @click.stop>
           <div class="modal-header">
-            <h3>{{ modoEdicionInfraestructura ? 'Editar' : 'Crear' }} {{ obtenerNombreSingular(tipoInfraestructuraActivo) }}</h3>
+            <h3>{{ obtenerTituloModalInfraestructura() }}</h3>
             <button @click="cerrarModalInfraestructura" class="modal-close">&times;</button>
           </div>
           <form @submit.prevent="guardarInfraestructura" class="modal-form">
@@ -402,6 +401,24 @@
             <!-- Formulario Piso -->
             <div v-if="tipoInfraestructuraActivo === 'pisos'" class="form-grid">
               <div class="form-group">
+                <label>Facultad</label>
+                <select v-model="formularioPiso.id_facultad" required @change="onFacultadChangePiso">
+                  <option value="">Seleccionar Facultad</option>
+                  <option v-for="facultad in facultades" :key="facultad.id_facultad" :value="facultad.id_facultad">
+                    {{ facultad.nombre_facultad }}
+                  </option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Edificio</label>
+                <select v-model="formularioPiso.id_edificio" required :disabled="!formularioPiso.id_facultad">
+                  <option value="">Seleccionar Edificio</option>
+                  <option v-for="edificio in edificiosFiltradosPiso" :key="edificio.id_edificio" :value="edificio.id_edificio">
+                    {{ edificio.nombre_edificio }}
+                  </option>
+                </select>
+              </div>
+              <div class="form-group">
                 <label>Número de Piso</label>
                 <select v-model="formularioPiso.numero_piso" required>
                   <option value="">Seleccionar Piso</option>
@@ -410,31 +427,40 @@
                   </option>
                 </select>
               </div>
-              <div class="form-group">
-                <label>Edificio</label>
-                <select v-model="formularioPiso.id_edificio" required>
-                  <option value="">Seleccionar Edificio</option>
-                  <option v-for="edificio in edificios" :key="edificio.id_edificio" :value="edificio.id_edificio">
-                    {{ edificio.nombre_edificio }}
-                  </option>
-                </select>
-              </div>
             </div>
 
             <!-- Formulario Aula -->
             <div v-if="tipoInfraestructuraActivo === 'aulas'" class="form-grid">
               <div class="form-group">
-                <label>Nombre del Aula</label>
-                <input v-model="formularioAula.nombre_aula" type="text" required />
+                <label>Facultad</label>
+                <select v-model="formularioAula.id_facultad" required @change="onFacultadChangeAula">
+                  <option value="">Seleccionar Facultad</option>
+                  <option v-for="facultad in facultades" :key="facultad.id_facultad" :value="facultad.id_facultad">
+                    {{ facultad.nombre_facultad }}
+                  </option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Edificio</label>
+                <select v-model="formularioAula.id_edificio" required @change="onEdificioChangeAula" :disabled="!formularioAula.id_facultad">
+                  <option value="">Seleccionar Edificio</option>
+                  <option v-for="edificio in edificiosFiltradosAula" :key="edificio.id_edificio" :value="edificio.id_edificio">
+                    {{ edificio.nombre_edificio }}
+                  </option>
+                </select>
               </div>
               <div class="form-group">
                 <label>Piso</label>
-                <select v-model="formularioAula.id_piso" required>
+                <select v-model="formularioAula.id_piso" required :disabled="!formularioAula.id_edificio">
                   <option value="">Seleccionar Piso</option>
-                  <option v-for="piso in pisos" :key="piso.id_piso" :value="piso.id_piso">
-                    {{ formatearNumeroPiso(piso.numero_piso) }} - {{ edificios.find(e => e.id_edificio === piso.id_edificio)?.nombre_edificio }}
+                  <option v-for="piso in pisosFiltradosAula" :key="piso.id_piso" :value="piso.id_piso">
+                    {{ formatearNumeroPiso(piso.numero_piso) }}
                   </option>
                 </select>
+              </div>
+              <div class="form-group">
+                <label>Nombre del Aula</label>
+                <input v-model="formularioAula.nombre_aula" type="text" required />
               </div>
             </div>
 
@@ -751,7 +777,6 @@
 import { useMenuAdmin } from './components/useMenuAdmin'
 
 const {
-  adminData,
   systemStats,
   navSections,
   activeSection,
@@ -790,12 +815,19 @@ const {
   edificiosFiltrados,
   pisosFiltrados,
   aulasFiltradas,
+  edificiosFiltradosPiso,
+  edificiosFiltradosAula,
+  pisosFiltradosAula,
+  onFacultadChangePiso,
+  onFacultadChangeAula,
+  onEdificioChangeAula,
   abrirModalCrearInfraestructura,
   cerrarModalInfraestructura,
   guardarInfraestructura,
   opcionesPisos,
   formatearNumeroPiso,
   obtenerNombreSingular,
+  obtenerTituloModalInfraestructura,
   // Materias
   materias,
   mostrarModalMateria,
