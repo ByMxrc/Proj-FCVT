@@ -1,22 +1,32 @@
 # 🎓 Sistema de Gestión Universitaria FCVT
 
-Un sistema completo de gestión académica desarrollado con Vue 3, TypeScript y Supabase que permite administrar toda la infraestructura universitaria, usuarios, materias y horarios de manera eficiente y escalable.
+Un sistema completo de gestión académica desarrollado con Vue 3/React, TypeScript y Supabase que permite administrar toda la infraestructura universitaria, usuarios, materias y horarios de manera eficiente y escalable.
 
 ## 🏗️ Arquitectura del Sistema
 
 ### Stack Tecnológico
 
-- **Frontend**: Vue 3 + Composition API + TypeScript
+- **Frontend**: Vue 3 + React (Arquitectura Híbrida)
+- **Integración**: [vue-react-wrapper](https://github.com/Innei/vue-react-wrapper)
 - **Backend**: Supabase (PostgreSQL + REST API)
 - **Build Tool**: Vite
+- **Lenguaje**: TypeScript
 - **UI/UX**: CSS3 modular con sistema de componentes responsive
 - **Autenticación**: Sistema propio con encriptación bcrypt
+
+### Arquitectura Híbrida Vue + React
+
+Este proyecto implementa una **arquitectura híbrida innovadora** que combina Vue 3 y React usando [vue-react-wrapper](https://github.com/Innei/vue-react-wrapper):
+
+- **Vue 3**: Maneja las páginas principales, routing y estructura general
+- **React**: Gestiona componentes complejos, lógica de negocio y estado
+- **Integración perfecta** entre ambos frameworks sin conflictos
+- **Compartición de servicios** y interfaces TypeScript
 
 ### Estructura del Proyecto
 
 ```
-src/
-├── components/           # Componentes reutilizables
+src/        # Componentes Vue (UI y layout)
 ├── interfaces/           # Interfaces TypeScript del dominio
 │   ├── Usuario.ts       # Interface para usuarios y roles
 │   ├── Facultad.ts      # Interface para facultades
@@ -31,7 +41,7 @@ src/
 │   ├── Docente.ts       # Interface específica para docentes
 │   ├── Administrador.ts # Interface específica para administradores
 │   └── index.ts         # Exportación centralizada
-├── services/            # Servicios de API y lógica de negocio
+├── services/            # Servicios de API y lógica de negocio (TypeScript)
 │   ├── UsuarioService.ts
 │   ├── FacultadService.ts
 │   ├── EdificioService.ts
@@ -45,7 +55,7 @@ src/
 │   ├── DocenteService.ts
 │   ├── AdministradorService.ts
 │   └── index.ts
-├── pages/               # Páginas principales del sistema
+├── pages/               # Páginas principales del sistema (Vue 3)
 │   ├── LoginPage.vue    # Página de autenticación
 │   ├── MenuEstudiante.vue # Portal del estudiante
 │   ├── MenuAdmin.vue    # Panel de administración
@@ -53,9 +63,71 @@ src/
 │       ├── useLogin.ts
 │       ├── useMenuEstudiante.ts
 │       └── useMenuAdmin.ts
-├── router/              # Configuración de rutas
+├── router/              # Configuración de rutas Vue
 └── styles/              # Estilos CSS modulares
 ```
+
+## 🔗 Arquitectura Híbrida Vue + React
+
+### Integración con vue-react-wrapper
+
+Este proyecto utiliza [vue-react-wrapper](https://github.com/Innei/vue-react-wrapper) para lograr una integración perfecta entre Vue 3 y React:
+
+#### ¿Cómo Funciona?
+
+1. **Vue 3 como Base**: Maneja el routing, páginas principales y estructura general
+2. **React como Lógica**: Gestiona componentes complejos, estado y lógica de negocio
+3. **Wrapper Seamless**: vue-react-wrapper permite usar componentes React dentro de Vue sin conflictos
+
+#### Ejemplo de Integración
+
+```vue
+<!-- Página Vue que integra React -->
+<template>
+  <div class="admin-panel">
+    <h1>Panel de Administración</h1>
+    <!-- Componente React integrado -->
+    <ReactWrapper 
+      :component="ReactAdminDashboard" 
+      :props="dashboardProps"
+      @data-update="handleDataUpdate"
+    />
+  </div>
+</template>
+
+<script setup>
+import { ReactWrapper } from 'vue-react-wrapper'
+import ReactAdminDashboard from '@/components/react/AdminDashboard'
+
+const dashboardProps = ref({
+  usuarios: usuarios.value,
+  facultades: facultades.value
+})
+</script>
+```
+
+```tsx
+// Componente React con lógica compleja
+const ReactAdminDashboard: React.FC = ({ usuarios, facultades }) => {
+  const { loading, error, updateData } = useAdminData()
+  
+  return (
+    <div className="dashboard">
+      <UserManagement users={usuarios} />
+      <FacultyStats faculties={facultades} />
+      <ComplexCharts data={processedData} />
+    </div>
+  )
+}
+```
+
+#### Ventajas de esta Arquitectura
+
+- **📊 Componentes React complejos**: Ideales para dashboards, tablas avanzadas y gráficos
+- **🎯 Vue para páginas**: Simplicidad para routing y estructura general
+- **🔄 Estado compartido**: Interfaces TypeScript funcionan en ambos frameworks
+- **⚡ Performance**: Solo se carga React donde se necesita
+- **🛠️ Ecosistema completo**: Acceso a librerías de ambos frameworks
 
 ## 🎯 Funcionalidades Principales
 
@@ -192,18 +264,23 @@ interface Horario {
 - **Relaciones complejas** entre tablas
 - **Estrategias de fallback** para datos faltantes
 
-### Composables Vue 3
+### Composables Vue 3 + React Hooks
 
-#### Patrón Composable
-- **Lógica reutilizable** entre componentes
-- **Estado reactivo** con Vue 3 Composition API
-- **Separación de responsabilidades** clara
-- **Testing más sencillo** y mantenible
+#### Patrón Híbrido
+- **Vue Composables**: Lógica reutilizable entre componentes Vue
+- **React Hooks**: Gestión de estado complejo y efectos
+- **Estado reactivo** con Vue 3 Composition API y React useState/useEffect
+- **Separación de responsabilidades** clara entre frameworks
 
-#### Composables Especializados
-- `useLogin.ts` - Autenticación y sesiones
-- `useMenuEstudiante.ts` - Portal estudiantil
-- `useMenuAdmin.ts` - Panel administrativo
+#### Composables Vue Especializados
+- `useLogin.ts` - Autenticación y sesiones (Vue)
+- `useMenuEstudiante.ts` - Portal estudiantil (Vue)
+- `useMenuAdmin.ts` - Panel administrativo (Vue)
+
+#### React Hooks para Lógica Compleja
+- `useUsuarios.tsx` - Gestión avanzada de usuarios
+- `useInfraestructura.tsx` - Manejo de infraestructura jerárquica
+- `useDashboard.tsx` - Analytics y estadísticas complejas
 
 ## 🚀 Instalación y Configuración
 
@@ -219,8 +296,15 @@ interface Horario {
 git clone [repository-url]
 cd Vue3-React
 
-# Instalar dependencias
+# Instalar dependencias (incluye vue-react-wrapper)
 npm install
+
+# Dependencias principales instaladas:
+# - vue@^3.x (framework principal)
+# - react@^18.x (para componentes complejos)
+# - vue-react-wrapper (integración entre frameworks)
+# - typescript (tipado estático)
+# - vite (build tool)
 
 # Configurar variables de entorno
 cp .env.example .env
@@ -231,6 +315,29 @@ npm run dev
 
 # Build para producción
 npm run build
+```
+
+### Configuración de vue-react-wrapper
+
+El proyecto ya incluye la configuración necesaria para vue-react-wrapper en:
+
+```typescript
+// vite.config.ts
+import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [
+    vue(),
+    react(), // Soporte para React
+  ],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, 'src'),
+    },
+  },
+})
 ```
 
 ### Configuración de Base de Datos
@@ -313,137 +420,11 @@ El sistema requiere las siguientes tablas en Supabase:
 
 **Desarrollado para la Facultad de Ciencias y Tecnología** | **Universidad Tecnológica**
 
-1. **UsuarioPage.vue** - Página que envuelve la gestión de usuarios
-2. **MainApp.vue** - Aplicación principal con navegación
+## 🔗 Referencias y Créditos
 
-## 🚀 Cómo Funciona la Integración
-
-### 1. Componente Vue envuelve React
-```vue
-<template>
-  <div class="vue-wrapper">
-    <h1>{{ pageTitle }}</h1>
-    <ReactWrapper 
-      :component="ReactUsuarioManager" 
-      :props="reactProps"
-      @usuario-select="handleUsuarioSelect"
-    />
-  </div>
-</template>
-```
-
-### 2. React maneja toda la lógica
-```tsx
-const ReactUsuarioManager: React.FC = () => {
-  const { usuarios, loading, error, deleteUsuario } = useUsuarios();
-  
-  return (
-    <UsuarioList 
-      usuarios={usuarios}
-      onDelete={deleteUsuario}
-      // ... más lógica
-    />
-  );
-};
-```
-
-### 3. Servicios compartidos
-```typescript
-// Los servicios son TypeScript puro, usables desde React y Vue
-export const usuarioService = {
-  getAllUsuarios: () => Promise<Usuario[]>,
-  createUsuario: (data: CreateUsuario) => Promise<Usuario>,
-  // ... más métodos
-};
-```
-
-## 🎯 Ventajas de esta Arquitectura
-
-### ✅ Separación de Responsabilidades
-- **Vue**: Solo se encarga del layout y navegación
-- **React**: Maneja toda la lógica de negocio y estado
-
-### ✅ Reutilización de Código
-- Los hooks y componentes React son totalmente reutilizables
-- Los servicios TypeScript funcionan en ambos frameworks
-
-### ✅ Flexibilidad
-- Fácil agregar nuevas páginas Vue que usen componentes React
-- Posibilidad de migrar gradualmente entre frameworks
-
-### ✅ Tipado Fuerte
-- Interfaces TypeScript compartidas entre Vue y React
-- IntelliSense completo en ambos ecosistemas
-
-## 📦 Instalación y Uso
-
-```bash
-# Instalar dependencias
-npm install
-
-# Ejecutar en desarrollo
-npm run dev
-
-# Construir para producción
-npm run build
-```
-
-## 🔄 Cómo Agregar Nuevas Funcionalidades
-
-### 1. Crear un nuevo Hook React
-```typescript
-// src/hooks/useNuevaEntidad.ts
-export const useNuevaEntidad = () => {
-  const [entidades, setEntidades] = useState([]);
-  // ... lógica del hook
-  return { entidades, crear, actualizar, eliminar };
-};
-```
-
-### 2. Crear Componentes React
-```tsx
-// src/components/react/NuevaEntidadList.tsx
-const NuevaEntidadList: React.FC = () => {
-  const { entidades } = useNuevaEntidad();
-  return <div>{/* Renderizar lista */}</div>;
-};
-```
-
-### 3. Crear Página Vue
-```vue
-<!-- src/components/NuevaEntidadPage.vue -->
-<template>
-  <div>
-    <h1>{{ titulo }}</h1>
-    <ReactWrapper :component="NuevaEntidadManager" />
-  </div>
-</template>
-```
-
-## 🌐 API y Servicios
-
-El proyecto se conecta a Supabase para datos reales. Cada servicio incluye:
-
-- Operaciones CRUD completas
-- Manejo de errores
-- Tipado TypeScript
-- Métodos de filtrado y búsqueda
-
-## 🎨 Estilos y UI
-
-- **Vue**: Maneja estilos de layout y navegación
-- **React**: Estilos de componentes con CSS-in-JS
-- Diseño responsivo y moderno
-- Gradientes y animaciones suaves
-
-## 🔍 Próximos Pasos
-
-1. Agregar más entidades (Estudiantes, Docentes, Materias, Horarios)
-2. Implementar formularios React para creación/edición
-3. Agregar sistema de routing Vue
-4. Implementar autenticación
-5. Agregar tests unitarios
-
----
-
-Esta arquitectura demuestra cómo combinar lo mejor de ambos frameworks, manteniendo Vue para la estructura de páginas y React para la lógica compleja de negocio.
+- **[vue-react-wrapper](https://github.com/Innei/vue-react-wrapper)** - Biblioteca base para la integración Vue + React
+- **[Vue 3](https://vuejs.org/)** - Framework principal para páginas y routing
+- **[React](https://reactjs.org/)** - Biblioteca para componentes complejos y lógica
+- **[Supabase](https://supabase.com/)** - Backend como servicio
+- **[TypeScript](https://www.typescriptlang.org/)** - Tipado estático
+- **[Vite](https://vitejs.dev/)** - Build tool y dev server
