@@ -1,41 +1,62 @@
-import type { Piso } from '../types/Piso';
+import type { Piso } from '../interfaces/Piso';
+import { getSupabaseHeaders, getApiUrl } from './supabaseConfig';
 
 export interface CreatePiso {
   numero_piso: number;
   id_edificio: number;
 }
 
-const SUPABASE_URL = 'https://db.pijowuuofyevtcphiaxv.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBpam93dXVvZnlldnRjcGhpYXh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2NDY5MzgsImV4cCI6MjA2OTIyMjkzOH0.lzyqahuTEJpq98oURT9Y4WpTi6figyU5qruQHmUO4m8';
-const API_BASE_URL = `${SUPABASE_URL}/rest/v1/piso`;
+export interface UpdatePiso {
+  id_piso?: number;
+  numero_piso?: number;
+  id_edificio?: number;
+}
 
-const getHeaders = () => ({
-  'Content-Type': 'application/json',
-  'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-  'apikey': SUPABASE_ANON_KEY
-});
+const API_BASE_URL = getApiUrl('piso');
+
+const getHeaders = getSupabaseHeaders;
+
+// Función para manejar errores de red
+const handleNetworkError = (error: any, operation: string) => {
+  console.error(`Error en ${operation}:`, error);
+  
+  if (error.name === 'TypeError' && error.message.includes('fetch')) {
+    throw new Error('Error de conexión. Verifica tu conexión a internet y que Supabase esté disponible.');
+  }
+  
+  if (error.message.includes('CORS')) {
+    throw new Error('Error de CORS. Verifica la configuración de Supabase.');
+  }
+  
+  throw new Error(error.message || `Error desconocido en ${operation}`);
+};
 
 export const pisoService = {
-  async getAllPisos(): Promise<Piso[]> {
+  async getAll(): Promise<Piso[]> {
     try {
+      console.log('🔍 Obteniendo todos los pisos...');
+      
       const response = await fetch(API_BASE_URL, {
         method: 'GET',
         headers: getHeaders()
       });
 
       if (!response.ok) {
-        throw new Error('Error al obtener los pisos');
+        const errorText = await response.text();
+        console.error('❌ Error response:', errorText);
+        throw new Error(`Error ${response.status}: ${errorText || 'Error al obtener los pisos'}`);
       }
 
       const pisos = await response.json();
+      console.log('✅ Pisos obtenidos:', pisos.length);
       return pisos;
-    } catch (error) {
-      console.error('Error:', error);
-      throw error;
+    } catch (error: any) {
+      handleNetworkError(error, 'getAll');
+      return [];
     }
   },
 
-  async getPisoById(id: string): Promise<Piso> {
+  async getById(id: string): Promise<Piso> {
     try {
       const response = await fetch(`${API_BASE_URL}?id_piso=eq.${id}`, {
         method: 'GET',
@@ -58,75 +79,9 @@ export const pisoService = {
     }
   },
 
-  async createPiso(piso: CreatePiso): Promise<Piso> {
+  async getByEdificioId(edificioId: string): Promise<Piso[]> {
     try {
-      const response = await fetch(API_BASE_URL, {
-        method: 'POST',
-        headers: {
-          ...getHeaders(),
-          'Prefer': 'return=representation'
-        },
-        body: JSON.stringify(piso),
-      });
-
-      if (!response.ok) {
-        throw new Error('Error al crear el piso');
-      }
-
-      const createdPisos = await response.json();
-      return createdPisos[0];
-    } catch (error) {
-      console.error('Error:', error);
-      throw error;
-    }
-  },
-
-  async updatePiso(id: string, piso: CreatePiso): Promise<Piso> {
-    try {
-      const response = await fetch(`${API_BASE_URL}?id_piso=eq.${id}`, {
-        method: 'PATCH',
-        headers: {
-          ...getHeaders(),
-          'Prefer': 'return=representation'
-        },
-        body: JSON.stringify(piso),
-      });
-
-      if (!response.ok) {
-        throw new Error('Error al actualizar el piso');
-      }
-
-      const updatedPisos = await response.json();
-      if (updatedPisos.length === 0) {
-        throw new Error('Piso no encontrado para actualizar');
-      }
-
-      return updatedPisos[0];
-    } catch (error) {
-      console.error('Error:', error);
-      throw error;
-    }
-  },
-
-  async deletePiso(id: string): Promise<void> {
-    try {
-      const response = await fetch(`${API_BASE_URL}?id_piso=eq.${id}`, {
-        method: 'DELETE',
-        headers: getHeaders()
-      });
-
-      if (!response.ok) {
-        throw new Error('Error al eliminar el piso');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      throw error;
-    }
-  },
-
-  async getPisosByEdificio(idEdificio: string): Promise<Piso[]> {
-    try {
-      const response = await fetch(`${API_BASE_URL}?id_edificio=eq.${idEdificio}`, {
+      const response = await fetch(`${API_BASE_URL}?id_edificio=eq.${edificioId}`, {
         method: 'GET',
         headers: getHeaders()
       });
@@ -135,10 +90,87 @@ export const pisoService = {
         throw new Error('Error al obtener los pisos por edificio');
       }
 
-      const pisos = await response.json();
-      return pisos;
+      return await response.json();
     } catch (error) {
       console.error('Error:', error);
+      throw error;
+    }
+  },
+
+  async create(piso: CreatePiso): Promise<Piso> {
+    try {
+      console.log('✏️ Creando piso:', piso);
+      
+      const response = await fetch(API_BASE_URL, {
+        method: 'POST',
+        headers: {
+          ...getHeaders(),
+          'Prefer': 'return=representation'
+        },
+        body: JSON.stringify(piso)
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Error al crear piso:', errorText);
+        throw new Error(`Error al crear el piso: ${errorText}`);
+      }
+
+      const result = await response.json();
+      console.log('✅ Piso creado:', result);
+      return Array.isArray(result) ? result[0] : result;
+    } catch (error: any) {
+      handleNetworkError(error, 'create');
+      throw error;
+    }
+  },
+
+  async update(id: string, piso: UpdatePiso): Promise<Piso> {
+    try {
+      console.log('📝 Actualizando piso:', id, piso);
+      
+      const response = await fetch(`${API_BASE_URL}?id_piso=eq.${id}`, {
+        method: 'PATCH',
+        headers: {
+          ...getHeaders(),
+          'Prefer': 'return=representation'
+        },
+        body: JSON.stringify(piso)
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Error al actualizar piso:', errorText);
+        throw new Error(`Error al actualizar el piso: ${errorText}`);
+      }
+
+      const result = await response.json();
+      console.log('✅ Piso actualizado:', result);
+      return Array.isArray(result) ? result[0] : result;
+    } catch (error: any) {
+      handleNetworkError(error, 'update');
+      throw error;
+    }
+  },
+
+  async delete(id: string): Promise<void> {
+    try {
+      console.log('🗑️ Eliminando piso:', id);
+      
+      const response = await fetch(`${API_BASE_URL}?id_piso=eq.${id}`, {
+        method: 'DELETE',
+        headers: getHeaders()
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Error al eliminar piso:', errorText);
+        throw new Error(`Error al eliminar el piso: ${errorText}`);
+      }
+
+      console.log('✅ Piso eliminado');
+    } catch (error: any) {
+      handleNetworkError(error, 'delete');
       throw error;
     }
   }

@@ -1,4 +1,5 @@
-import type { Paralelo } from '../types/Paralelo';
+import type { Paralelo } from '../interfaces/Paralelo';
+import { getApiUrl, getSupabaseHeaders } from './supabaseConfig';
 
 export interface CreateParalelo {
   nombre_paralelo: string;
@@ -7,22 +8,14 @@ export interface CreateParalelo {
   cupo_maximo: number;
 }
 
-const SUPABASE_URL = 'https://db.pijowuuofyevtcphiaxv.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBpam93dXVvZnlldnRjcGhpYXh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2NDY5MzgsImV4cCI6MjA2OTIyMjkzOH0.lzyqahuTEJpq98oURT9Y4WpTi6figyU5qruQHmUO4m8';
-const API_BASE_URL = `${SUPABASE_URL}/rest/v1/paralelo`;
-
-const getHeaders = () => ({
-  'Content-Type': 'application/json',
-  'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-  'apikey': SUPABASE_ANON_KEY
-});
+const API_BASE_URL = getApiUrl('paralelo');
 
 export const paraleloService = {
   async getAllParalelos(): Promise<Paralelo[]> {
     try {
       const response = await fetch(API_BASE_URL, {
         method: 'GET',
-        headers: getHeaders()
+        headers: getSupabaseHeaders()
       });
 
       if (!response.ok) {
@@ -41,7 +34,7 @@ export const paraleloService = {
     try {
       const response = await fetch(`${API_BASE_URL}?id_paralelo=eq.${id}`, {
         method: 'GET',
-        headers: getHeaders()
+        headers: getSupabaseHeaders()
       });
 
       if (!response.ok) {
@@ -65,7 +58,7 @@ export const paraleloService = {
       const response = await fetch(API_BASE_URL, {
         method: 'POST',
         headers: {
-          ...getHeaders(),
+          ...getSupabaseHeaders(),
           'Prefer': 'return=representation'
         },
         body: JSON.stringify(paralelo),
@@ -88,7 +81,7 @@ export const paraleloService = {
       const response = await fetch(`${API_BASE_URL}?id_paralelo=eq.${id}`, {
         method: 'PATCH',
         headers: {
-          ...getHeaders(),
+          ...getSupabaseHeaders(),
           'Prefer': 'return=representation'
         },
         body: JSON.stringify(paralelo),
@@ -114,7 +107,7 @@ export const paraleloService = {
     try {
       const response = await fetch(`${API_BASE_URL}?id_paralelo=eq.${id}`, {
         method: 'DELETE',
-        headers: getHeaders()
+        headers: getSupabaseHeaders()
       });
 
       if (!response.ok) {
@@ -130,7 +123,7 @@ export const paraleloService = {
     try {
       const response = await fetch(`${API_BASE_URL}?id_materia=eq.${idMateria}`, {
         method: 'GET',
-        headers: getHeaders()
+        headers: getSupabaseHeaders()
       });
 
       if (!response.ok) {
@@ -149,7 +142,7 @@ export const paraleloService = {
     try {
       const response = await fetch(`${API_BASE_URL}?id_docente=eq.${idDocente}`, {
         method: 'GET',
-        headers: getHeaders()
+        headers: getSupabaseHeaders()
       });
 
       if (!response.ok) {

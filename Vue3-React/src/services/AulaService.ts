@@ -1,42 +1,62 @@
-import type { Aula } from '../types/Aula';
+import type { Aula } from '../interfaces/Aula';
+import { getSupabaseHeaders, getApiUrl } from './supabaseConfig';
 
 export interface CreateAula {
   nombre_aula: string;
-  capacidad: number;
   id_piso: number;
 }
 
-const SUPABASE_URL = 'https://db.pijowuuofyevtcphiaxv.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBpam93dXVvZnlldnRjcGhpYXh2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2NDY5MzgsImV4cCI6MjA2OTIyMjkzOH0.lzyqahuTEJpq98oURT9Y4WpTi6figyU5qruQHmUO4m8';
-const API_BASE_URL = `${SUPABASE_URL}/rest/v1/aula`;
+export interface UpdateAula {
+  id_aula?: number;
+  nombre_aula?: string;
+  id_piso?: number;
+}
 
-const getHeaders = () => ({
-  'Content-Type': 'application/json',
-  'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-  'apikey': SUPABASE_ANON_KEY
-});
+const API_BASE_URL = getApiUrl('aula');
+
+const getHeaders = getSupabaseHeaders;
+
+// Función para manejar errores de red
+const handleNetworkError = (error: any, operation: string) => {
+  console.error(`Error en ${operation}:`, error);
+  
+  if (error.name === 'TypeError' && error.message.includes('fetch')) {
+    throw new Error('Error de conexión. Verifica tu conexión a internet y que Supabase esté disponible.');
+  }
+  
+  if (error.message.includes('CORS')) {
+    throw new Error('Error de CORS. Verifica la configuración de Supabase.');
+  }
+  
+  throw new Error(error.message || `Error desconocido en ${operation}`);
+};
 
 export const aulaService = {
-  async getAllAulas(): Promise<Aula[]> {
+  async getAll(): Promise<Aula[]> {
     try {
+      console.log('🔍 Obteniendo todas las aulas...');
+      
       const response = await fetch(API_BASE_URL, {
         method: 'GET',
         headers: getHeaders()
       });
 
       if (!response.ok) {
-        throw new Error('Error al obtener las aulas');
+        const errorText = await response.text();
+        console.error('❌ Error response:', errorText);
+        throw new Error(`Error ${response.status}: ${errorText || 'Error al obtener las aulas'}`);
       }
 
       const aulas = await response.json();
+      console.log('✅ Aulas obtenidas:', aulas.length);
       return aulas;
-    } catch (error) {
-      console.error('Error:', error);
-      throw error;
+    } catch (error: any) {
+      handleNetworkError(error, 'getAll');
+      return [];
     }
   },
 
-  async getAulaById(id: string): Promise<Aula> {
+  async getById(id: string): Promise<Aula> {
     try {
       const response = await fetch(`${API_BASE_URL}?id_aula=eq.${id}`, {
         method: 'GET',
@@ -59,75 +79,9 @@ export const aulaService = {
     }
   },
 
-  async createAula(aula: CreateAula): Promise<Aula> {
+  async getByPisoId(pisoId: string): Promise<Aula[]> {
     try {
-      const response = await fetch(API_BASE_URL, {
-        method: 'POST',
-        headers: {
-          ...getHeaders(),
-          'Prefer': 'return=representation'
-        },
-        body: JSON.stringify(aula),
-      });
-
-      if (!response.ok) {
-        throw new Error('Error al crear el aula');
-      }
-
-      const createdAulas = await response.json();
-      return createdAulas[0];
-    } catch (error) {
-      console.error('Error:', error);
-      throw error;
-    }
-  },
-
-  async updateAula(id: string, aula: CreateAula): Promise<Aula> {
-    try {
-      const response = await fetch(`${API_BASE_URL}?id_aula=eq.${id}`, {
-        method: 'PATCH',
-        headers: {
-          ...getHeaders(),
-          'Prefer': 'return=representation'
-        },
-        body: JSON.stringify(aula),
-      });
-
-      if (!response.ok) {
-        throw new Error('Error al actualizar el aula');
-      }
-
-      const updatedAulas = await response.json();
-      if (updatedAulas.length === 0) {
-        throw new Error('Aula no encontrada para actualizar');
-      }
-
-      return updatedAulas[0];
-    } catch (error) {
-      console.error('Error:', error);
-      throw error;
-    }
-  },
-
-  async deleteAula(id: string): Promise<void> {
-    try {
-      const response = await fetch(`${API_BASE_URL}?id_aula=eq.${id}`, {
-        method: 'DELETE',
-        headers: getHeaders()
-      });
-
-      if (!response.ok) {
-        throw new Error('Error al eliminar el aula');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      throw error;
-    }
-  },
-
-  async getAulasByPiso(idPiso: string): Promise<Aula[]> {
-    try {
-      const response = await fetch(`${API_BASE_URL}?id_piso=eq.${idPiso}`, {
+      const response = await fetch(`${API_BASE_URL}?id_piso=eq.${pisoId}`, {
         method: 'GET',
         headers: getHeaders()
       });
@@ -136,29 +90,87 @@ export const aulaService = {
         throw new Error('Error al obtener las aulas por piso');
       }
 
-      const aulas = await response.json();
-      return aulas;
+      return await response.json();
     } catch (error) {
       console.error('Error:', error);
       throw error;
     }
   },
 
-  async getAulasByCapacidad(capacidadMinima: number): Promise<Aula[]> {
+  async create(aula: CreateAula): Promise<Aula> {
     try {
-      const response = await fetch(`${API_BASE_URL}?capacidad=gte.${capacidadMinima}`, {
-        method: 'GET',
+      console.log('✏️ Creando aula:', aula);
+      
+      const response = await fetch(API_BASE_URL, {
+        method: 'POST',
+        headers: {
+          ...getHeaders(),
+          'Prefer': 'return=representation'
+        },
+        body: JSON.stringify(aula)
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Error al crear aula:', errorText);
+        throw new Error(`Error al crear el aula: ${errorText}`);
+      }
+
+      const result = await response.json();
+      console.log('✅ Aula creada:', result);
+      return Array.isArray(result) ? result[0] : result;
+    } catch (error: any) {
+      handleNetworkError(error, 'create');
+      throw error;
+    }
+  },
+
+  async update(id: string, aula: UpdateAula): Promise<Aula> {
+    try {
+      console.log('📝 Actualizando aula:', id, aula);
+      
+      const response = await fetch(`${API_BASE_URL}?id_aula=eq.${id}`, {
+        method: 'PATCH',
+        headers: {
+          ...getHeaders(),
+          'Prefer': 'return=representation'
+        },
+        body: JSON.stringify(aula)
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Error al actualizar aula:', errorText);
+        throw new Error(`Error al actualizar el aula: ${errorText}`);
+      }
+
+      const result = await response.json();
+      console.log('✅ Aula actualizada:', result);
+      return Array.isArray(result) ? result[0] : result;
+    } catch (error: any) {
+      handleNetworkError(error, 'update');
+      throw error;
+    }
+  },
+
+  async delete(id: string): Promise<void> {
+    try {
+      console.log('🗑️ Eliminando aula:', id);
+      
+      const response = await fetch(`${API_BASE_URL}?id_aula=eq.${id}`, {
+        method: 'DELETE',
         headers: getHeaders()
       });
 
       if (!response.ok) {
-        throw new Error('Error al obtener las aulas por capacidad');
+        const errorText = await response.text();
+        console.error('❌ Error al eliminar aula:', errorText);
+        throw new Error(`Error al eliminar el aula: ${errorText}`);
       }
 
-      const aulas = await response.json();
-      return aulas;
-    } catch (error) {
-      console.error('Error:', error);
+      console.log('✅ Aula eliminada');
+    } catch (error: any) {
+      handleNetworkError(error, 'delete');
       throw error;
     }
   }

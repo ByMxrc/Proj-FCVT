@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import MainApp from './components/MainApp.vue'
+// Router setup
 </script>
 
 <template>
   <div id="app">
-    <MainApp />
+    <router-view />
   </div>
 </template>
 
