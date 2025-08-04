@@ -1,0 +1,31 @@
+// Exportar enums y tipos básicos
+export type { RolEnum } from './Usuario'
+export type { DiaSemanaEnum } from './Horario'
+
+// Exportar interfaces principales
+export type { Usuario } from './Usuario'
+export type { Estudiante } from './Estudiante'
+export type { Docente } from './Docente'
+export type { Administrador } from './Administrador'
+export type { Facultad } from './Facultad'
+export type { Edificio } from './Edificio'
+export type { Piso } from './Piso'
+export type { Aula } from './Aula'
+export type { Materia } from './Materia'
+export type { Paralelo } from './Paralelo'
+export type { Horario } from './Horario'
+export type { Matricula } from './Matricula'
+
+// Re-exportar todo desde cada archivo para acceso completo
+export * from './Usuario'
+export * from './Estudiante'
+export * from './Docente'
+export * from './Administrador'
+export * from './Facultad'
+export * from './Edificio'
+export * from './Piso'
+export * from './Aula'
+export * from './Materia'
+export * from './Paralelo'
+export * from './Horario'
+export * from './Matricula'
